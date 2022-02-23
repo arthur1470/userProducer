@@ -14,6 +14,9 @@ import com.usuario.producer.producer.GerarSenhaProducer;
 import com.usuario.producer.producer.LoginProducer;
 import com.usuario.producer.producer.RegistroProducer;
 
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+
 @RestController()
 @RequestMapping("/user")
 public class UsuarioController {
@@ -21,19 +24,32 @@ public class UsuarioController {
 	private final RegistroProducer registroProducer;
 	private final GerarSenhaProducer gerarSenhaProducer;
 	private final LoginProducer loginProducer;
+	private Tracer tracer;
+	
 
 	public UsuarioController(RegistroProducer registroProducer, 
 							 LoginProducer loginProducer,
-							 GerarSenhaProducer gerarSenhaProducer) {
+							 GerarSenhaProducer gerarSenhaProducer,
+							 Tracer tracer) {
 		
 		this.registroProducer = registroProducer;
 		this.loginProducer = loginProducer;
 		this.gerarSenhaProducer = gerarSenhaProducer;
+		this.tracer = tracer;
 	}
 
 	@PostMapping("/register")
 	public ResponseEntity<UsuarioDTO> registrarUsuario(@RequestBody UsuarioDTO usuarioDTO) {
-		registroProducer.sendRegistrar(usuarioDTO);
+		Span span = tracer.activeSpan();
+		
+		span.setOperationName("REGISTRO: " + usuarioDTO.getCpf());
+		span.setTag("CPF", usuarioDTO.getCpf());
+		span.setTag("OPERACAO", "registro");
+		span.log("TESTE DE LOG");
+		span.setBaggageItem("Baggage 01", "010101010101");
+		
+		
+		registroProducer.sendRegistrar(usuarioDTO);			
 
 		return ResponseEntity.status(HttpStatus.OK).build();
 	}

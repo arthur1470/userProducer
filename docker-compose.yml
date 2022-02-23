@@ -1,6 +1,12 @@
 version: '2'
 
 services:
+  jaeger-all-in-one:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "14268"
+      - "14250"
 
   zookeeper:
     image: confluentinc/cp-zookeeper:5.5.1
